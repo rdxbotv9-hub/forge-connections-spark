@@ -114,9 +114,9 @@ export const CHAT_THEMES: ChatTheme[] = [
 
 export type ThreadPrefs = {
   themeId: string;
-  customBg?: string;
-  customOut?: string;
-  fontScale?: number;
+  customBg?: string | undefined;
+  customOut?: string | undefined;
+  fontScale?: number | undefined;
 };
 
 const THREAD_KEY = (me: string, peer: string) => `srt-theme-${me}-${peer}`;
