@@ -917,20 +917,24 @@ function MessageRow({
 
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0]?.clientX ?? null;
-    beginLongPress();
+    startY.current = e.touches[0]?.clientY ?? null;
+    if (!selectMode) beginLongPress();
   };
   const onTouchMove = (e: React.TouchEvent) => {
     if (startX.current === null) return;
     const dx = (e.touches[0]?.clientX ?? 0) - startX.current;
-    if (Math.abs(dx) > 6) cancelLongPress();
-    if (dx > 0 && !selectMode) setOffset(Math.min(dx, 70));
+    const dy = (e.touches[0]?.clientY ?? 0) - (startY.current ?? 0);
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) cancelLongPress();
+    if (dx > 0 && Math.abs(dy) < 30 && !selectMode) setOffset(Math.min(dx, 70));
   };
   const onTouchEnd = () => {
     cancelLongPress();
     if (offset > 45) onReply();
     setOffset(0);
     startX.current = null;
+    startY.current = null;
   };
+
 
   const tick = message.pending ? (
     <Clock className="h-3 w-3 opacity-70" />
