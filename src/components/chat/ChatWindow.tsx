@@ -944,12 +944,13 @@ function MessageRow({
 
   return (
     <div
-      className={`group relative flex items-center gap-2 rounded-lg px-1 transition-colors ${
-        isSelected ? "bg-primary/15" : ""
-      } ${mine ? "justify-end" : "justify-start"}`}
+      className={`group relative flex items-center gap-2 rounded-lg px-1 py-0.5 transition-colors ${
+        isSelected ? "bg-primary/25 ring-1 ring-primary/40" : ""
+      } ${selectMode ? "cursor-pointer select-none" : ""} ${mine ? "justify-end" : "justify-start"}`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
       onContextMenu={(e) => {
         e.preventDefault();
         onToggleSelect();
@@ -962,17 +963,19 @@ function MessageRow({
       }}
     >
       {selectMode && (
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={onToggleSelect}
-          className="h-4 w-4 shrink-0 accent-current"
-          aria-label="Select message"
-        />
+        <span
+          aria-hidden
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+            isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/50"
+          }`}
+        >
+          {isSelected && <Check className="h-3 w-3" />}
+        </span>
       )}
       {offset > 8 && (
         <CornerUpLeft className="absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       )}
+
       <div
         className="max-w-[80%] transition-transform"
         style={{ transform: `translateX(${offset}px)` }}
