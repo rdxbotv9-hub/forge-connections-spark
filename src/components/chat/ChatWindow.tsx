@@ -917,20 +917,24 @@ function MessageRow({
 
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0]?.clientX ?? null;
-    beginLongPress();
+    startY.current = e.touches[0]?.clientY ?? null;
+    if (!selectMode) beginLongPress();
   };
   const onTouchMove = (e: React.TouchEvent) => {
     if (startX.current === null) return;
     const dx = (e.touches[0]?.clientX ?? 0) - startX.current;
-    if (Math.abs(dx) > 6) cancelLongPress();
-    if (dx > 0 && !selectMode) setOffset(Math.min(dx, 70));
+    const dy = (e.touches[0]?.clientY ?? 0) - (startY.current ?? 0);
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) cancelLongPress();
+    if (dx > 0 && Math.abs(dy) < 30 && !selectMode) setOffset(Math.min(dx, 70));
   };
   const onTouchEnd = () => {
     cancelLongPress();
     if (offset > 45) onReply();
     setOffset(0);
     startX.current = null;
+    startY.current = null;
   };
+
 
   const tick = message.pending ? (
     <Clock className="h-3 w-3 opacity-70" />
@@ -944,12 +948,13 @@ function MessageRow({
 
   return (
     <div
-      className={`group relative flex items-center gap-2 rounded-lg px-1 transition-colors ${
-        isSelected ? "bg-primary/15" : ""
-      } ${mine ? "justify-end" : "justify-start"}`}
+      className={`group relative flex items-center gap-2 rounded-lg px-1 py-0.5 transition-colors ${
+        isSelected ? "bg-primary/25 ring-1 ring-primary/40" : ""
+      } ${selectMode ? "cursor-pointer select-none" : ""} ${mine ? "justify-end" : "justify-start"}`}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      onTouchCancel={onTouchEnd}
       onContextMenu={(e) => {
         e.preventDefault();
         onToggleSelect();
@@ -962,17 +967,19 @@ function MessageRow({
       }}
     >
       {selectMode && (
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={onToggleSelect}
-          className="h-4 w-4 shrink-0 accent-current"
-          aria-label="Select message"
-        />
+        <span
+          aria-hidden
+          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
+            isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/50"
+          }`}
+        >
+          {isSelected && <Check className="h-3 w-3" />}
+        </span>
       )}
       {offset > 8 && (
         <CornerUpLeft className="absolute left-1 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
       )}
+
       <div
         className="max-w-[80%] transition-transform"
         style={{ transform: `translateX(${offset}px)` }}
@@ -997,9 +1004,21 @@ function MessageRow({
             <p className="px-1 text-sm italic opacity-60">This message was deleted</p>
           ) : message.kind === "text" ? (
             <p className="whitespace-pre-wrap break-words px-1 text-sm">{message.content}</p>
+          ) : message.kind === "gif" || message.kind === "sticker" ? (
+            message.content?.startsWith("http") ? (
+              <img
+                src={message.content}
+                alt={message.kind}
+                loading="lazy"
+                className={`rounded-lg ${message.kind === "sticker" ? "max-h-36" : "max-h-56"}`}
+              />
+            ) : (
+              <span className="block px-1 text-5xl leading-tight">{message.content}</span>
+            )
           ) : (
             <MediaBubble path={message.media_url} kind={message.kind} onOpen={onOpenMedia} />
           )}
+
 
           <div className="flex items-center justify-end gap-1 px-1 pt-0.5 text-[10px] opacity-80">
             <span>{timeOf(message.created_at)}</span>
