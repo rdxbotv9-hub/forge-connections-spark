@@ -997,9 +997,21 @@ function MessageRow({
             <p className="px-1 text-sm italic opacity-60">This message was deleted</p>
           ) : message.kind === "text" ? (
             <p className="whitespace-pre-wrap break-words px-1 text-sm">{message.content}</p>
+          ) : message.kind === "gif" || message.kind === "sticker" ? (
+            message.content?.startsWith("http") ? (
+              <img
+                src={message.content}
+                alt={message.kind}
+                loading="lazy"
+                className={`rounded-lg ${message.kind === "sticker" ? "max-h-36" : "max-h-56"}`}
+              />
+            ) : (
+              <span className="block px-1 text-5xl leading-tight">{message.content}</span>
+            )
           ) : (
             <MediaBubble path={message.media_url} kind={message.kind} onOpen={onOpenMedia} />
           )}
+
 
           <div className="flex items-center justify-end gap-1 px-1 pt-0.5 text-[10px] opacity-80">
             <span>{timeOf(message.created_at)}</span>
